@@ -10,7 +10,9 @@
     :user (:db-user config)
     :password (:db-pass config)}))
 
-(defentity schools)
+(defentity schools
+  (transform (fn [s] (assoc s :__type :school))))
+
 (defentity results)
 (defentity divisions)
 
@@ -36,3 +38,11 @@
 (defn by [q n v] (where q (= n v)))
 (defn for-list [q o l] (-> q (offset o) (limit l)))
 (defn run [q] (exec q))
+
+(defn count-star [q] (-> q (aggregate (count :*) :cnt) run first :cnt))
+
+(defn pager [q off lim]
+  {:size (count-star q)
+   :vals (-> q (for-list off lim) (run))
+   :offset off
+   :limit lim})
